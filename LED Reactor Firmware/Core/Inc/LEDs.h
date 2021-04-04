@@ -1,11 +1,12 @@
 #include "stm32f4xx_hal.h"
+
 typedef struct{
 
 	GPIO_TypeDef * RedLED_Port;
-	GPIO_TypeDef * WhiteLED_Port;
 	GPIO_TypeDef * GreenLED_Port;
 	GPIO_TypeDef * BlueLED_Port;
 	GPIO_TypeDef * OrangeLED_Port;
+	GPIO_TypeDef * WhiteLED_Port;
 
 
 	uint16_t RedLED_Pin;

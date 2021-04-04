@@ -22,11 +22,15 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "LEDs.h"
+#include <string.h>
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+void InitLEDS(void);
+void StartTheSystem(void);
 
 /* USER CODE END PTD */
 
@@ -40,6 +44,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 
@@ -47,12 +52,15 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 
 /* USER CODE END 0 */
 
@@ -83,7 +91,10 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+	char terminateBuffer[5] = "";
 
   /* USER CODE END 2 */
 
@@ -91,6 +102,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+	  StartTheSystem();
+	  HAL_UART_Transmit(&huart3, "waiting for Stop Command", strlen("waiting for Stop Command"), HAL_MAX_DELAY);
+	  HAL_UART_Receive(&huart3, terminateBuffer, "stop", HAL_MAX_DELAY);
+	  HAL_UART_Transmit(&huart3, "Stop Command Recieved", strlen("Stop Command Recieved"), HAL_MAX_DELAY);
+	  LEDs_TurnOffAll();
+	  HAL_UART_Transmit(&huart3, "LEDs Turned Off", strlen("LEDs Turned Off"), HAL_MAX_DELAY);
+
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -137,7 +158,121 @@ void SystemClock_Config(void)
   }
 }
 
+/**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PA0 PA1 PA2 PA3
+                           PA4 PA5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_4|GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+}
+
 /* USER CODE BEGIN 4 */
+
+void InitLEDS(void){
+
+	LEDsConf_TypeDef * LEDs_init;
+	LEDs_init->RedLED_Port = GPIOA;
+	LEDs_init->GreenLED_Port = GPIOA;
+	LEDs_init->BlueLED_Port = GPIOA;
+	LEDs_init->OrangeLED_Port = GPIOA;
+	LEDs_init->WhiteLED_Port = GPIOA;
+
+
+	LEDs_init->BlueLED_Pin = GPIO_PIN_0;
+	LEDs_init->BlueLED_Pin = GPIO_PIN_1;
+	LEDs_init->BlueLED_Pin = GPIO_PIN_2;
+	LEDs_init->BlueLED_Pin = GPIO_PIN_3;
+	LEDs_init->BlueLED_Pin = GPIO_PIN_4;
+	LEDs_ConfigLEDs(&LEDs_init);
+	HAL_UART_Transmit(&huart3, "LEDs are all set!", strlen("LEDs are all set!"), HAL_MAX_DELAY);
+}
+
+void StartTheSystem(void){
+	char buffer[10] = "";
+	char colorBuffer[1] = "";
+	char intensityBuffer[3] = "";
+	uint8_t color;
+	uint8_t intensity;
+
+	// Recieve the instruction for Start from Python
+	while (strcmp(buffer, "start")){
+	  HAL_UART_Receive(&huart3, buffer, strlen("start"), HAL_MAX_DELAY);
+	}
+
+	HAL_UART_Transmit(&huart3, "Start command is Recieved", strlen("Start command is Recieved"), HAL_MAX_DELAY);
+
+
+	// Recieve the color. color is an integer with the following correspondance:
+	// 1->R, 2->G, 3->B, 4->O, 5->W
+	HAL_UART_Receive(&huart3, colorBuffer, strlen("1"), HAL_MAX_DELAY);
+	HAL_UART_Transmit(&huart3, "color is just recieved", strlen("color is just recieved"), HAL_MAX_DELAY);
+	color =  atoi(colorBuffer);
+
+	// Recieve the Intensity of the LEDs. This is also a 8 bit number
+	HAL_UART_Receive(&huart3, intensityBuffer, strlen("111"), HAL_MAX_DELAY);
+	HAL_UART_Transmit(&huart3, "intensity is just recieved", strlen("intensity is just recieved"), HAL_MAX_DELAY);
+	intensity = atoi(intensityBuffer);
+
+	// adjust the intensity by changing the pwm ratio
+	//turn the LED on
+	LEDs_TurnOnLED(color);
+	HAL_UART_Transmit(&huart3, "LEDs Turned ON!", strlen("LEDs Turned ON!"), HAL_MAX_DELAY);
+
+
+}
 
 /* USER CODE END 4 */
 

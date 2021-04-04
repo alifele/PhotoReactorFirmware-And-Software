@@ -1,0 +1,4 @@
+LEDs.c:6:6:LEDs_ConfigLEDs	16	static
+LEDs.c:16:6:LEDs_TurnOffAll	8	static
+LEDs.c:26:6:LEDs_TurnOnLED	16	static
+LEDs.c:47:6:LEDs_TurnOffLED	16	static

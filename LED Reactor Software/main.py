@@ -40,6 +40,8 @@ class App(QMainWindow):
             value = int(self.ui.IntensityLineEdit.text())
             self.ui.IntensityBar.setValue(value)
         else:
+            value = int(self.ui.IntensityLineEdit.text())
+            self.ui.IntensityBar.setValue(value)
             _translate = QtCore.QCoreApplication.translate
             self.AutomaticTurnOff()
             time.sleep(0.1)
@@ -61,6 +63,7 @@ class App(QMainWindow):
         if self.status == 'off':
             self.ui.IntensityLineEdit.setText(str(self.ui.IntensityBar.value()))
         else:
+            self.ui.IntensityLineEdit.setText(str(self.ui.IntensityBar.value()))
             _translate = QtCore.QCoreApplication.translate
             self.AutomaticTurnOff()
             time.sleep(0.1)
@@ -165,6 +168,7 @@ class App(QMainWindow):
                 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
                 "p, li { white-space: pre-wrap; }\n"
                 "</style></head><body style=\" font-family:\'Ubuntu\'; font-size:11pt; font-weight:400; font-style:normal;\">\n"
+                "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Status: <span style=\" color:green;\">" + "system is ON"+ "</span></p>\n"
                 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Color: <span style=\" color:" + self.Color + ";\">" + self.color + "</span></p>\n"
                 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Intensity (8bit): <span style=\" color:#204a87;\">" + str(self.intensity) + "</span></p>\n"
                 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">intensity (watt): <span style=\" color:#204a87;\">0.04</span></p>\n"
